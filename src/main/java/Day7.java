@@ -1,7 +1,6 @@
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * --- Day 7: Handy Haversacks ---
@@ -66,76 +65,48 @@ import java.util.stream.Collectors;
  */
 public class Day7 extends AbstractDay {
 
+    private final Map<String, Map<String, Integer>> inverted;
+    private final Map<String, Map<String, Integer>> normal;
+    private final String START = "shiny gold";
+
     private Day7() {
         super("day7");
+        normal = new HashMap<>();
+        inverted = new HashMap<>();
+        parseRules();
     }
 
-    private Map<String, Map<String, Integer>> parseRules() {
+    private void parseRules() {
         Pattern p = Pattern.compile("([^0-9]+) bags contain (.*)");
         Pattern p2 = Pattern.compile("([0-9]+) ([^0-9]+) bag");
-        return lines.stream().map(s -> {
-            Map<String, Integer> map = new HashMap<>();
+        lines.stream().forEach(s -> {
             Matcher m = p.matcher(s);
             if (m.matches()) {
                 String bagType  = m.group(1);
-                String innerBags = m.group(2);
-                Matcher m2 = p2.matcher(innerBags);
+                normal.putIfAbsent(bagType, new HashMap<>());
+                Matcher m2 = p2.matcher(m.group(2));
                 while (m2.find()) {
-                    String num = m2.group(1);
+                    int num = Integer.parseInt(m2.group(1));
                     String innerBag = m2.group(2);
-                    map.put(innerBag, Integer.parseInt(num));
+                    inverted.putIfAbsent(innerBag, new HashMap<>());
+                    normal.get(bagType).put(innerBag, num);
+                    inverted.get(innerBag).put(bagType, num);
                 }
-                return new AbstractMap.SimpleImmutableEntry<>(bagType, map);
             } else {
                 System.out.println("ERROR: " + s);
-                return new AbstractMap.SimpleImmutableEntry<String, Map<String, Integer>>(s, new HashMap<>());
             }
-
-            }
-        ).collect(Collectors.toMap(e -> e.getKey(), e-> e.getValue()));
-    }
-
-    private void addToMap(Map<String, Map<String, Integer>> m, String k1, String k2, int v) {
-        Map<String, Integer> nm = m.getOrDefault(k1, new HashMap<>());
-        nm.put(k2, v);
-        m.put(k1, nm);
-    }
-
-    private Map<String, Map<String, Integer>> inverted() {
-        Pattern p = Pattern.compile("([^0-9]+) bags contain (.*)");
-        Pattern p2 = Pattern.compile("([0-9]+) ([^0-9]+) bag");
-        Map<String, Map<String, Integer>> res = new HashMap<>();
-        lines.stream().forEach(s -> {
-                    Matcher m = p.matcher(s);
-                    if (m.matches()) {
-                        String bagType = m.group(1);
-                        String innerBags = m.group(2);
-                        Matcher m2 = p2.matcher(innerBags);
-                        while (m2.find()) {
-                            String num = m2.group(1);
-                            String innerBag = m2.group(2);
-                            addToMap(res, innerBag, bagType, Integer.parseInt(num));
-                        }
-                    } else {
-                        System.out.println("ERROR: " + s);
-                    }
-
-                }
-        );
-        return res;
+        });
     }
 
     @Override
     public String solve1() {
         Set<String> outerbags = new HashSet<>();
-        String start = "shiny gold";
-        Map<String, Map<String, Integer>> bagMap = inverted();
         Queue<String> q = new LinkedList<>();
-        q.add(start);
-        outerbags.add(start);
+        q.add(START);
+        outerbags.add(START);
         while (!q.isEmpty()) {
             String bag = q.poll();
-            Set<String> bags = bagMap.getOrDefault(bag, new HashMap<>()).keySet();
+            Set<String> bags = inverted.getOrDefault(bag, new HashMap<>()).keySet();
             for (String b : bags) {
                 if (!outerbags.contains(b)) {
                     outerbags.add(b);
@@ -143,35 +114,27 @@ public class Day7 extends AbstractDay {
                 }
             }
         }
-        outerbags.remove(start);
-        return "" + outerbags.size();
+        outerbags.remove(START);
+        return START + " " + outerbags.size();
     }
 
-    private Integer recurse(Map<String, Map<String, Integer>> m, Map<String, Integer> memo, String current) {
+    private Integer recurse(Map<String, Integer> memo, String current) {
         if (memo.containsKey(current)) {
             return memo.get(current);
         }
-        Map<String, Integer> children = m.get(current);
+        Map<String, Integer> children = normal.get(current);
         if (children.isEmpty()) {
             memo.put(current, 0);
             return 0;
         }
-        Integer res = children.entrySet().stream().mapToInt(e -> e.getValue() * (recurse(m, memo, e.getKey()) + 1)).sum();
+        Integer res = children.entrySet().stream().mapToInt(e -> e.getValue() * (recurse(memo, e.getKey()) + 1)).sum();
         memo.put(current, res);
         return res;
     }
 
     @Override
     public String solve2() {
-        Map<String, Map<String, Integer>> rules = parseRules();
-        String start = "shiny gold";
-        Queue<String> q = new LinkedList<>();
-        q.add(start);
-
-        Map<String, Integer> colorToSize = new HashMap<>();
-        Integer res = recurse(rules, colorToSize, start);
-
-        return start +" "  + colorToSize.get(start);
+        return START +" "  + recurse(new HashMap<>(), START);
     }
 
     public static void main(String args[]) {
