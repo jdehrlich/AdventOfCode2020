@@ -46,7 +46,7 @@ import java.util.stream.Stream;
  * As a sanity check, look through your list of boarding passes. What is the highest seat ID on a boarding pass?
  */
 public class Day5 extends AbstractDay {
-    public Day5() {
+    private Day5() {
         super("day5");
     }
 

@@ -3,7 +3,7 @@ import java.util.stream.Collectors;
 
 public class Day1 extends AbstractDay {
 
-    public Day1() {
+    private Day1() {
         super("day1");
     }
 

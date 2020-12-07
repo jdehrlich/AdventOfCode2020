@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class Day2 extends AbstractDay {
     private Pattern pattern;
 
-    public Day2() {
+    private Day2() {
         super("day2");
         pattern = Pattern.compile("(\\d+)-(\\d+) ([a-z]): (.*)");
 

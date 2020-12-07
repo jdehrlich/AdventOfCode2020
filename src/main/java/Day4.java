@@ -114,7 +114,7 @@ import java.util.stream.Collectors;
  */
 public class Day4 extends AbstractDay {
 
-    public Day4() {
+    private Day4() {
         super("day4");
     }
 
