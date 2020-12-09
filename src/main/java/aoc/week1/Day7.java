@@ -1,3 +1,7 @@
+package aoc.week1;
+
+import aoc.utils.AbstractDay;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,7 +74,7 @@ public class Day7 extends AbstractDay {
     private final String START = "shiny gold";
 
     private Day7() {
-        super("day7");
+        super(Day7.class.getCanonicalName().replaceAll("\\.", "/").toLowerCase());
         normal = new HashMap<>();
         inverted = new HashMap<>();
         parseRules();

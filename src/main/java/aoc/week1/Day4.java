@@ -1,3 +1,7 @@
+package aoc.week1;
+
+import aoc.utils.AbstractDay;
+
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -115,7 +119,7 @@ import java.util.stream.Collectors;
 public class Day4 extends AbstractDay {
 
     private Day4() {
-        super("day4");
+        super("aoc/week1/day4");
     }
 
     private boolean isValid(String pp) {

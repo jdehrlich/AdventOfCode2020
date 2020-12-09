@@ -1,6 +1,10 @@
+package aoc.week1;
+
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import aoc.utils.AbstractDay;
 
 /**
  * --- Day 2: Password Philosophy ---
@@ -41,7 +45,7 @@ public class Day2 extends AbstractDay {
     private Pattern pattern;
 
     private Day2() {
-        super("day2");
+        super("aoc/week1/day2");
         pattern = Pattern.compile("(\\d+)-(\\d+) ([a-z]): (.*)");
 
     }

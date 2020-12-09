@@ -1,7 +1,10 @@
+package aoc.week1;
+
+import aoc.utils.AbstractDay;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -47,7 +50,7 @@ import java.util.stream.Stream;
  */
 public class Day5 extends AbstractDay {
     private Day5() {
-        super("day5");
+        super("aoc/week1/day5");
     }
 
 
