@@ -3,6 +3,11 @@ package aoc;
 import aoc.utils.AbstractDay;
 
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 /**
  * --- Day 11: Seating System ---
@@ -206,126 +211,53 @@ public class Day11 extends AbstractDay {
         super(Day11.class.getCanonicalName().replaceAll("\\.", "/").toLowerCase());
     }
 
-    private char[][] readLines(){
-        char[][] seats = new char[lines.size()][];
-        for (int i = 0; i < lines.size(); ++i) {
-            seats[i] = lines.get(i).toCharArray();
-        }
-        System.out.println(Arrays.deepToString(seats));
-        return seats;
-    }
 
-    private int count(int i, int j, char [][] seats) {
-        int res = 0;
-        for (int x = -1; x <=1; ++x) {
-            for (int y = -1; y <=1; ++y) {
-                if (i+x >= 0 && i+x < seats.length && j+y >=0 && j+y < seats[j].length && (x != 0 || y != 0)) {
-                    if (seats[i+x][j+y] == '#') {
-                        res++;
-                    }
-                }
+    private int count(int i, int j, int [][] seats, int limit) {
+        return IntStream.range(-1, 2).map(x -> IntStream.range(-1, 2).map(y -> {
+            if (x == 0 && y == 0) {
+                return 0;
             }
+            OptionalInt oz = IntStream.range(1, limit)
+                    .filter(z -> i + (x * z) >= 0 && i + (x * z) < seats.length)
+                    .filter(z -> j + (y * z) >= 0 && j + (y * z) < seats[j].length)
+                    .filter(z -> seats[i + (x * z)][j + (y * z)] != '.')
+                    .findFirst();
+            return oz.isPresent() ? seats[i + (x * oz.getAsInt())][j + (y * oz.getAsInt())] == '#' ? 1 : 0 : 0;
+        }).sum()).sum();
+    }
+
+    private boolean reassignSeats(int [][] seats, int limit, int count) {
+        AtomicBoolean changed = new AtomicBoolean(false);
+        int [][] tmp = IntStream.range(0, seats.length)
+                .mapToObj(i -> IntStream.range(0, seats[i].length)
+                        .map(j -> (seats[i][j] == 'L' && count(i, j, seats, limit) == 0 && (changed.getAndSet(true) || true))
+                                ? '#'
+                                : (seats[i][j] == '#' && count(i, j, seats, limit) >= count && (changed.getAndSet(true) || true))
+                                ? 'L'
+                                : seats[i][j]).toArray()).toArray(int[][]::new);
+        for (int i = 0; i < seats.length; ++i) {
+            seats[i] = tmp[i];
         }
-        return res;
+        return changed.get();
     }
 
 
-    private void set(int i, int j, char [][] prev, char [][] next) {
-        if (prev[i][j] == 'L' && count(i, j, prev) == 0) {
-            next[i][j] = '#';
-        } else  if (prev[i][j] == '#' && count(i,j,prev) >= 4) {
-            next[i][j] = 'L';
-        } else {
-            next[i][j] = prev[i][j];
-        }
+    private int countSeatsAfterAssignment(int limit, int maxOccupied) {
+        int[][] seats = lines.stream().map(s -> s.chars().toArray()).toArray(int[][]::new);
+        while (reassignSeats(seats, limit, maxOccupied));
+        return Arrays.stream(seats).mapToInt(a -> (int) Arrays.stream(a).filter(c -> c == '#').count()).sum();
+
     }
 
     @Override
     public String solve1() {
-        char[][] seats = readLines();
-        char [][] newSeats = new char[seats.length][seats[0].length];
-        int count = 0;
-        while (!Arrays.deepEquals(seats, newSeats)) {
-            for (int i = 0; i < seats.length; ++i) {
-                for (int j = 0; j < seats[0].length; ++j) {
-                    set(i, j, seats, newSeats);
-                }
-            }
-            char[][] tmp = seats;
-            seats = newSeats;
-            newSeats = tmp;
-            count++;
-            System.out.println(count);
-        }
-        count = 0;
-        for (int i = 0; i <newSeats.length; ++i) {
-            for (int j = 0; j < newSeats[0].length; ++j) {
-                if (newSeats[i][j] == '#') {
-                    count++;
-                }
-            }
-        }
-        return "count = " + count;
-    }
-
-    private void set2(int i, int j, char [][] prev, char [][] next) {
-        if (prev[i][j] == 'L' && count2(i, j, prev) == 0) {
-            next[i][j] = '#';
-        } else  if (prev[i][j] == '#' && count2(i,j,prev) >= 5) {
-            next[i][j] = 'L';
-        } else {
-            next[i][j] = prev[i][j];
-        }
-    }
-
-    private int count2(int i, int j, char [][] seats) {
-        int res = 0;
-        for (int x = -1; x <=1; ++x) {
-            for (int y = -1; y <=1; ++y) {
-                if (x == 0 && y == 0) {
-                    continue;
-                }
-                int z = 1;
-                while (i+(x*z) >= 0 && i+(x*z) < seats.length && j+(y*z) >=0 && j+(y*z) < seats[j].length) {
-                    if (seats[i+(x*z)][j+(y*z)] == '#') {
-                        res++;
-                        break;
-                    } else if (seats[i+(x*z)][j+(y*z)] == 'L') {
-                        break;
-                    }
-                    z++;
-                }
-            }
-        }
-        return res;
+        return "count = " + countSeatsAfterAssignment(2, 4);
     }
 
     @Override
     public String solve2() {
-        char[][] seats = readLines();
-        char [][] newSeats = new char[seats.length][seats[0].length];
-        int count = 0;
-        while (!Arrays.deepEquals(seats, newSeats)) {
-            for (int i = 0; i < seats.length; ++i) {
-                for (int j = 0; j < seats[0].length; ++j) {
-                    set2(i, j, seats, newSeats);
-                }
-            }
-            char[][] tmp = seats;
-            seats = newSeats;
-            newSeats = tmp;
-            count++;
-            System.out.println(count);
-        }
-        count = 0;
-        for (int i = 0; i <newSeats.length; ++i) {
-            for (int j = 0; j < newSeats[0].length; ++j) {
-                if (newSeats[i][j] == '#') {
-                    count++;
-                }
-            }
-        }
-        return "count = " + count;    }
+        return "count = " + countSeatsAfterAssignment(lines.size()+lines.get(0).length(), 5);
+    }
 
     public static void main(String args[]) {
         new Day11().main();
