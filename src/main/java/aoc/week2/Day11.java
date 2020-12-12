@@ -1,12 +1,10 @@
-package aoc;
+package aoc.week2;
 
 import aoc.utils.AbstractDay;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 /**
