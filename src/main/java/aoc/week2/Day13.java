@@ -1,13 +1,10 @@
-package aoc;
+package aoc.week2;
 
 import aoc.utils.AbstractDay;
 
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.LongStream;
-
-import static java.util.Map.entry;
 
 /**
  * --- Day 13: Shuttle Search ---
