@@ -2,6 +2,9 @@ package aoc.week1;
 
 import aoc.utils.AbstractDay;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -164,7 +167,6 @@ public class Day4 extends AbstractDay {
     private String solve(Predicate<String> fn) {
         String pp = "";
         List<String> pps = new ArrayList<>();
-        int valid = 0;
         for (String line : lines) {
             if (line == null || line.equals("")) {
                 pps.add(pp);
@@ -174,8 +176,6 @@ public class Day4 extends AbstractDay {
             }
         }
         pps.add(pp);
-        System.out.println(pps.size());
-
         return "Solution: " + pps.stream().filter(s -> fn.test(s)).count();
     }
 
