@@ -1,4 +1,4 @@
-package aoc;
+package aoc.week3;
 
 import aoc.utils.AbstractDay;
 
