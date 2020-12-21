@@ -156,29 +156,65 @@ public class Day19 extends AbstractDay {
             } else if (text) {
                 input.add(line);
             } else {
-                rules.add(line);
+                rules.add(line.replaceAll("\"", ""));
             }
         }
         cfg = rules.stream().map(s -> s.split(":")).collect(Collectors.toMap(a -> a[0], a -> a[1]));
-        simplify("0", cfg);
+        rewriteRules(cfg);
     }
 
-    private String simplify(String curRule, Map<String, String> cfg) {
+    private void rewriteRules(Map<String, String> cfg) {
+        Pattern subRule = Pattern.compile("(\\d+)");
+        Set<String> doneRules = new HashSet<>();
+        Set<String> primRules = cfg.entrySet().stream()
+                .filter(e -> !subRule.matcher(e.getValue()).find())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+        int i = 0;
+        while (!primRules.isEmpty()) {
+            for (String rule : primRules) {
+                String ruleText = cfg.get(rule).replaceAll("\\s", "");
+                Pattern p = Pattern.compile("\\b"+rule+"\\b");
+                Set<String> mrs = cfg.entrySet().stream()
+                        .filter(e -> p.matcher(e.getValue()).find())
+                        .map(Map.Entry::getKey)
+                        .collect(Collectors.toSet());
+                for (String mr : mrs) {
+                    String mrText = cfg.get(mr);
+                    mrText = mrText.replaceAll(p.pattern(), ruleText.contains("|") ? "("+ruleText+")" : ruleText);
+                    ++i;
+                    cfg.put(mr, mrText);
+                }
+                doneRules.add(rule);
+            }
+            primRules = cfg.entrySet().stream()
+                    .filter(e -> !doneRules.contains(e.getKey()))
+                    .filter(e -> !subRule.matcher(e.getValue()).find())
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toSet());
+        }
+    }
+
+    /**
+     * First approach to building regexs a little more complicated
+     * @param curRule
+     * @param cfg
+     */
+    private void simplify(String curRule, Map<String, String> cfg) {
         Pattern subRule = Pattern.compile("(\\d+)");
         String ruleText = cfg.get(curRule);
         if (!ruleText.matches(".*"+subRule.pattern()+".*")) {
-            return ruleText;
+            return;
         }
         Matcher m = subRule.matcher(ruleText);
         while (m.find()) {
             String r = m.group(1);
-            ruleText = ruleText.replaceAll("\\b"+r+"\\b", simplify(r, cfg));
+            simplify(r, cfg);
+            ruleText = ruleText.replaceAll("\\b"+r+"\\b", cfg.get(r));
         }
         cfg.put(curRule, "(" + ruleText.replaceAll("\"", "") + ")");
-        return cfg.get(curRule);
+        return;
     }
-
-
 
     @Override
     public String solve1() {
@@ -193,7 +229,7 @@ public class Day19 extends AbstractDay {
         Map<String, Integer> matched = new HashMap<>();
         // since it is hard to match equal a and bs easies approach is to explicitly match a{i}b{i} from 0 to max length
         for (int i = 1; i < input.stream().mapToInt(s->s.length()).max().getAsInt()/2; i++) {
-            cfg.put("11", "("+cfg.get("42")+"{"+i+"}" + cfg.get("31")+"{"+i+"})");
+            cfg.put("11", "("+cfg.get("42")+"){"+i+"}(" + cfg.get("31")+"){"+i+"}");
             String regex = cfg.get("8") + cfg.get("11");
             Pattern p = Pattern.compile(regex.replaceAll("\\s", ""));
             int finalI = i;
