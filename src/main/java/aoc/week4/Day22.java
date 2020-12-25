@@ -455,6 +455,11 @@ public class Day22 extends AbstractDay {
     private String solve(boolean recurse) {
         parseInput();
         recursiveCombat(deck1, deck2, recurse);
+        if (deck1.isEmpty()) {
+            System.out.println("Player 2 wins");
+        } else {
+            System.out.println("Player 1 wins");
+        }
         return scoreDeck(deck1, deck2);
     }
 
